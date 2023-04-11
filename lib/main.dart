@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:test_drive/pages/landingpage.dart';
+import 'pages/newpage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,6 +12,38 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    const ColorScheme normalColorScheme = ColorScheme(
+      brightness: Brightness.light,
+      primary: Color.fromARGB(255, 91, 81, 77),
+      onPrimary: Color.fromARGB(255, 255, 236, 236),
+      secondary: Color(0xFFBBBBBB),
+      onSecondary: Color(0xFFEAEAEA),
+      error: Color(0xFFF32424),
+      onError: Color(0xFFF32424),
+      background: Color.fromARGB(255, 255, 220, 133),
+      onBackground: Color.fromARGB(255, 91, 81, 77),
+      surface: Color(0xFF54B435),
+      onSurface: Color(0xFF54B435),
+    );
+    const TextTheme normalTextTheme = TextTheme(
+      displaySmall: TextStyle(color: Colors.red),
+      displayMedium: TextStyle(color: Colors.red),
+      displayLarge: TextStyle(color: Colors.red),
+      titleLarge: TextStyle(color: Color.fromARGB(255, 255, 236, 235)),
+      titleMedium: TextStyle(color: Colors.red),
+      titleSmall: TextStyle(color: Colors.red),
+      bodyLarge: TextStyle(color: Colors.red),
+      bodyMedium: TextStyle(
+        color: Color.fromARGB(255, 91, 81, 77),
+        fontSize: 15.0,
+        height: 1.0,
+      ),
+      bodySmall: TextStyle(color: Colors.red),
+      labelLarge: TextStyle(color: Colors.red),
+      labelMedium: TextStyle(color: Colors.red),
+      labelSmall:
+          TextStyle(color: Color.fromARGB(255, 255, 236, 235), fontSize: 11.0),
+    );
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -22,7 +56,9 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primarySwatch: Colors.blue,
+        colorScheme: normalColorScheme,
+        scaffoldBackgroundColor: Color.fromARGB(255, 255, 220, 133),
+        textTheme: normalTextTheme,
       ),
       home: const MyHomePage(),
     );
@@ -45,15 +81,6 @@ class MyHomePage extends StatefulWidget {
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class NewPage extends StatefulWidget {
-  const NewPage({super.key});
-
-  final String title = 'New Page';
-
-  @override
-  State<NewPage> createState() => _NewPageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -88,7 +115,8 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title:
+            Text(widget.title, style: Theme.of(context).textTheme.titleLarge),
       ),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
@@ -121,54 +149,33 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: _resetCounter,
               child: Text('Reset Counter',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 10.0,
-                  )),
+                  style: Theme.of(context).textTheme.labelSmall),
             ),
             ElevatedButton(
                 onPressed: () {
                   Navigator.push(context,
                       MaterialPageRoute(builder: (context) => const NewPage()));
                 },
-                child: Text('New Page'))
+                child: Text('New Page',
+                    style: Theme.of(context).textTheme.labelSmall)),
+            ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const LandingPage()));
+                },
+                child: Text('New Landing Page',
+                    style: Theme.of(context).textTheme.labelSmall))
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
         tooltip: 'Increment',
+        backgroundColor: Theme.of(context).colorScheme.primary,
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
-  }
-}
-
-class _NewPageState extends State<NewPage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            Text(
-              'This is the new page.',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            Text(
-              'Press this button to go home.',
-            ),
-            ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const MyHomePage()));
-                },
-                child: Text('Home Page'))
-          ],
-        ),
-      ),
     );
   }
 }
