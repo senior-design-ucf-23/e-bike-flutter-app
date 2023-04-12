@@ -30,7 +30,10 @@ class MyApp extends StatelessWidget {
       displayMedium: TextStyle(color: Colors.red),
       displayLarge: TextStyle(color: Colors.red),
       titleLarge: TextStyle(color: Color.fromARGB(255, 255, 236, 235)),
-      titleMedium: TextStyle(color: Colors.red),
+      titleMedium: TextStyle(
+        color: Color.fromARGB(255, 91, 81, 77),
+        fontSize: 25.0,
+      ),
       titleSmall: TextStyle(color: Colors.red),
       bodyLarge: TextStyle(color: Colors.red),
       bodyMedium: TextStyle(
@@ -136,11 +139,27 @@ class _MyHomePageState extends State<MyHomePage> {
           // center the children vertically; the main axis here is the vertical
           // axis because Columns are vertical (the cross axis would be
           // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
+            Padding(
+                padding: EdgeInsets.all(10.0),
+                child: Text('Welcome to Group 12\'s E-Bike Application!',
+                    style: Theme.of(context).textTheme.bodyMedium)),
+            Padding(
+                padding: EdgeInsets.all(10.0),
+                child: Text(
+                  'Please do NOT use the application when riding.\nPress the button below to confirm you are not actively riding.\n(WE WILL KNOW)',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                )),
+            ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const LandingPage()));
+                },
+                child: Text('I AM NOT RIDING',
+                    style: Theme.of(context).textTheme.labelSmall)),
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
@@ -158,15 +177,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
                 child: Text('New Page',
                     style: Theme.of(context).textTheme.labelSmall)),
-            ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const LandingPage()));
-                },
-                child: Text('New Landing Page',
-                    style: Theme.of(context).textTheme.labelSmall))
           ],
         ),
       ),
