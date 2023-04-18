@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:test_drive/pages/landingpage.dart';
+import 'package:test_drive/pages/warning.dart';
+import 'pages/newpage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,21 +13,55 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    const ColorScheme normalColorScheme = ColorScheme(
+      brightness: Brightness.light,
+      primary: Color.fromARGB(255, 91, 81, 77),
+      onPrimary: Color.fromARGB(255, 255, 236, 236),
+      secondary: Color(0xFFBBBBBB),
+      onSecondary: Color(0xFFEAEAEA),
+      error: Color(0xFFF32424),
+      onError: Color(0xFFF32424),
+      background: Color.fromARGB(255, 255, 220, 133),
+      onBackground: Color.fromARGB(255, 91, 81, 77),
+      surface: Color(0xFF54B435),
+      onSurface: Color(0xFF54B435),
+    );
+    const TextTheme normalTextTheme = TextTheme(
+      displaySmall: TextStyle(color: Colors.red),
+      displayMedium: TextStyle(color: Colors.red),
+      displayLarge: TextStyle(color: Colors.red),
+      titleLarge: TextStyle(color: Color.fromARGB(255, 255, 236, 235)),
+      titleMedium: TextStyle(
+        color: Color.fromARGB(255, 91, 81, 77),
+        fontSize: 25.0,
+      ),
+      titleSmall: TextStyle(color: Colors.red),
+      bodyLarge: TextStyle(
+        color: Color.fromARGB(255, 242, 214, 203),
+        fontSize: 15.0,
+        height: 1.0,
+      ),
+      bodyMedium: TextStyle(
+        color: Color.fromARGB(255, 91, 81, 77),
+        fontSize: 15.0,
+        height: 1.0,
+      ),
+      bodySmall: TextStyle(color: Colors.red),
+      labelLarge: TextStyle(color: Colors.red),
+      labelMedium: TextStyle(color: Colors.red),
+      labelSmall:
+          TextStyle(color: Color.fromARGB(255, 255, 236, 235), fontSize: 11.0),
+    );
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
+        primaryColor: normalColorScheme.primary,
+        accentColor: normalColorScheme.error,
+        colorScheme: normalColorScheme,
+        scaffoldBackgroundColor: Color.fromARGB(255, 255, 220, 133),
+        textTheme: normalTextTheme,
       ),
-      home: const MyHomePage(),
+      home: const WarningPage(),
     );
   }
 }
@@ -45,15 +82,6 @@ class MyHomePage extends StatefulWidget {
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class NewPage extends StatefulWidget {
-  const NewPage({super.key});
-
-  final String title = 'New Page';
-
-  @override
-  State<NewPage> createState() => _NewPageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -88,7 +116,8 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title:
+            Text(widget.title, style: Theme.of(context).textTheme.titleLarge),
       ),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
@@ -108,11 +137,27 @@ class _MyHomePageState extends State<MyHomePage> {
           // center the children vertically; the main axis here is the vertical
           // axis because Columns are vertical (the cross axis would be
           // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
+            Padding(
+                padding: EdgeInsets.all(10.0),
+                child: Text('Welcome to Group 12\'s E-Bike Application!',
+                    style: Theme.of(context).textTheme.bodyMedium)),
+            Padding(
+                padding: EdgeInsets.all(10.0),
+                child: Text(
+                  'Please do NOT use the application when riding.\nPress the button below to confirm you are not actively riding.\n(WE WILL KNOW)',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                )),
+            ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const LandingPage()));
+                },
+                child: Text('I AM NOT RIDING',
+                    style: Theme.of(context).textTheme.labelSmall)),
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
@@ -121,54 +166,24 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: _resetCounter,
               child: Text('Reset Counter',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 10.0,
-                  )),
+                  style: Theme.of(context).textTheme.labelSmall),
             ),
             ElevatedButton(
                 onPressed: () {
                   Navigator.push(context,
                       MaterialPageRoute(builder: (context) => const NewPage()));
                 },
-                child: Text('New Page'))
+                child: Text('New Page',
+                    style: Theme.of(context).textTheme.labelSmall)),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
         tooltip: 'Increment',
+        backgroundColor: Theme.of(context).colorScheme.primary,
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
-  }
-}
-
-class _NewPageState extends State<NewPage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            Text(
-              'This is the new page.',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            Text(
-              'Press this button to go home.',
-            ),
-            ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const MyHomePage()));
-                },
-                child: Text('Home Page'))
-          ],
-        ),
-      ),
     );
   }
 }
