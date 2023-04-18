@@ -33,7 +33,8 @@ dependencies:
   app_settings: 4.2.0
   location_permissions: ^4.0.0
   flutter_reactive_ble: 5.0.3
-
+  speedometer: ^1.0.1
+  rxdart: 0.27.7
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

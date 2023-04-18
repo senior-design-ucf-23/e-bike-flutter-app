@@ -1,6 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:speedometer/speedometer.dart';
 
 class HUDPage extends StatefulWidget {
   const HUDPage({super.key});
@@ -12,45 +15,109 @@ class HUDPage extends StatefulWidget {
 }
 
 class _HUDPageState extends State<HUDPage> {
-  int _speedometer = 0;
+  final speed = PublishSubject<double>();
+  final charge = PublishSubject<double>();
 
   void _randomizeSpeed() {
     setState(() {
-      _speedometer = Random().nextInt(99);
+      speed.add(Random().nextInt(20).toDouble());
     });
+  }
+
+  void _randomizeCharge() {
+    setState(() {
+      charge.add(Random().nextInt(100).toDouble());
+    });
+  }
+
+  void _yaAuntie() {
+    setState(() {
+      speed.add(69);
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeRight]);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Text('$_speedometer',
-                  style: Theme.of(context).textTheme.titleMedium),
-            ),
-            Text(
-              'Press this button to randomize speed.',
-            ),
-            ElevatedButton(
-                onPressed: () {
-                  _randomizeSpeed();
-                },
-                child: Text('Randomize Speed')),
-            Text(
-              'Press this button to go home.',
-            ),
-            ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text('Go Back'))
-          ],
-        ),
-      ),
-    );
+        appBar: AppBar(title: Text(widget.title)),
+        body: OrientationBuilder(builder: (context, orientation) {
+          return GridView.count(
+              crossAxisCount: orientation == Orientation.portrait ? 2 : 3,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.all(30.0),
+                  child: Column(children: <Widget>[
+                    ElevatedButton(
+                      onPressed: () => _randomizeSpeed(),
+                      child: Text(
+                        'Randomize Speed',
+                        style: Theme.of(context).textTheme.labelSmall,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => _randomizeCharge(),
+                      child: Text(
+                        'Randomize Charge',
+                        style: Theme.of(context).textTheme.labelSmall,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ]),
+                ),
+                Padding(
+                    padding: EdgeInsets.all(35.0),
+                    child: Wrap(
+                        alignment: WrapAlignment.center,
+                        children: <Widget>[
+                          SpeedOMeter(
+                            start: 0,
+                            end: 20,
+                            highlightStart: 0.0,
+                            highlightEnd: 20.0,
+                            themeData: Theme.of(context),
+                            eventObservable: speed,
+                          ),
+                          Text('Speed',
+                              style: Theme.of(context).textTheme.bodyLarge)
+                        ])),
+                Padding(
+                    padding: EdgeInsets.all(35.0),
+                    child: Wrap(
+                        alignment: WrapAlignment.center,
+                        children: <Widget>[
+                          SpeedOMeter(
+                            start: 0,
+                            end: 100,
+                            highlightStart: 0.0,
+                            highlightEnd: 100.0,
+                            themeData: ThemeData(
+                                primaryColor: Colors.green,
+                                accentColor: Colors.red),
+                            eventObservable: charge,
+                          ),
+                          Text(
+                            'Charge',
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          )
+                        ])),
+              ]);
+        }));
   }
 }

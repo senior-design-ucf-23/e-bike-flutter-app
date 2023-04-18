@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:test_drive/pages/landingpage.dart';
+import 'package:test_drive/pages/warning.dart';
 import 'pages/newpage.dart';
 
 void main() {
@@ -35,7 +36,11 @@ class MyApp extends StatelessWidget {
         fontSize: 25.0,
       ),
       titleSmall: TextStyle(color: Colors.red),
-      bodyLarge: TextStyle(color: Colors.red),
+      bodyLarge: TextStyle(
+        color: Color.fromARGB(255, 242, 214, 203),
+        fontSize: 15.0,
+        height: 1.0,
+      ),
       bodyMedium: TextStyle(
         color: Color.fromARGB(255, 91, 81, 77),
         fontSize: 15.0,
@@ -50,20 +55,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
+        primaryColor: normalColorScheme.primary,
+        accentColor: normalColorScheme.error,
         colorScheme: normalColorScheme,
         scaffoldBackgroundColor: Color.fromARGB(255, 255, 220, 133),
         textTheme: normalTextTheme,
       ),
-      home: const MyHomePage(),
+      home: const WarningPage(),
     );
   }
 }
