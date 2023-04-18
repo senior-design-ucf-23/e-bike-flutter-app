@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:test_drive/pages/bluetooth.dart';
 import 'package:test_drive/pages/hudpage.dart';
-import 'package:test_drive/components/RainbowT.dart';
 import 'newpage.dart';
 
 class LandingPage extends StatefulWidget {
