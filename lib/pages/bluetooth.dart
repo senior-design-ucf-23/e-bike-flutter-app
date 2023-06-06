@@ -25,13 +25,19 @@ class _BluetoothPageState extends State<BluetoothPage> {
   late StreamSubscription<DiscoveredDevice> _scanStream;
   late QualifiedCharacteristic _rxCharacteristic;
 
-  final Uuid serviceUuid = Uuid.parse("75C276C3-8F97-20BC-A143-B354244886D4");
-  final Uuid characteristicUuid =
-      Uuid.parse("6ACF4F08-CC9D-D495-6B41-AA7E60C4E8A6");
+  final deviceNames = <String>[];
+  final Uuid ebikeServiceUuid =
+      Uuid.parse("0000FFE0-0000-1000-8000-00805F9B34FB");
+  final Uuid ebikeCharUuid = Uuid.parse("0000FFE1-0000-1000-8000-00805F9B34FB");
+  final Uuid ebikeUuid = Uuid.parse("5F1A2977-C1F0-8EE5-EFD7-1EFD7B5FC029");
+
+  final deviceInfo = <String>[];
 
   String _btstatus = "hello";
+  String temp = "hello";
 
   void _startScan() async {
+    int index = 0;
     // handles platform permissions
     bool permGranted = false;
     setState(() {
@@ -49,14 +55,21 @@ class _BluetoothPageState extends State<BluetoothPage> {
     // main scanning logic
     if (permGranted) {
       setState(() {
-        _btstatus = "searching...";
+        _btstatus = "";
       });
-      _scanStream = flutterReactiveBle
-          .scanForDevices(withServices: [serviceUuid]).listen((device) {
-        // Change this string to what you defined in Zephyr
-        if (device.name == 'TEST') {
+      _scanStream =
+          flutterReactiveBle.scanForDevices(withServices: []).listen((device) {
+        if (!deviceInfo.contains(device.name)) {
+          temp = "${device.name}, ${device.id}\n";
+          deviceInfo.add(device.name);
+          deviceInfo.add(device.id.toString());
           setState(() {
-            _btstatus = "device found";
+            _btstatus += temp;
+          });
+          index++;
+        }
+        if (device.name == 'DSD TECH') {
+          setState(() {
             _myDevice = device;
             _foundDeviceWaitingToConnect = true;
           });
@@ -68,43 +81,46 @@ class _BluetoothPageState extends State<BluetoothPage> {
   void _partyTime() {
     if (_connected) {
       flutterReactiveBle
-          .writeCharacteristicWithResponse(_rxCharacteristic, value: [
-        0xff,
+          .writeCharacteristicWithoutResponse(_rxCharacteristic, value: [
+        0x61,
       ]);
     }
   }
 
   void _connectToDevice() {
-    // We're done scanning, we can cancel it
     _scanStream.cancel();
-    // Let's listen to our connection so we can make updates on a state change
     Stream<ConnectionStateUpdate> currentConnectionStream = flutterReactiveBle
         .connectToAdvertisingDevice(
             id: _myDevice.id,
             prescanDuration: const Duration(seconds: 1),
-            withServices: [serviceUuid, characteristicUuid]);
+            withServices: [ebikeServiceUuid, ebikeCharUuid]);
     currentConnectionStream.listen((event) {
       switch (event.connectionState) {
-        // We're connected and good to go!
         case DeviceConnectionState.connected:
           {
             _rxCharacteristic = QualifiedCharacteristic(
-                serviceId: serviceUuid,
-                characteristicId: characteristicUuid,
-                deviceId: event.deviceId);
+                serviceId: ebikeServiceUuid,
+                characteristicId: ebikeCharUuid,
+                deviceId: _myDevice.id);
             setState(() {
               _foundDeviceWaitingToConnect = false;
               _connected = true;
             });
             break;
           }
-        // Can add various state state updates on disconnect
         case DeviceConnectionState.disconnected:
           {
+            _connected = false;
             break;
           }
         default:
       }
+    });
+  }
+
+  void _partyTime2() {
+    setState(() {
+      _btstatus = "Party Time!";
     });
   }
 

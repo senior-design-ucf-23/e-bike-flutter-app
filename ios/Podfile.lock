@@ -2,18 +2,25 @@ PODS:
   - "app_settings (3.0.0+1)":
     - Flutter
   - Flutter (1.0.0)
+  - flutter_blue (0.0.1):
+    - Flutter
+    - flutter_blue/Protos (= 0.0.1)
+  - flutter_blue/Protos (0.0.1):
+    - Flutter
+    - Protobuf (~> 3.11.4)
   - "location_permissions (3.0.0+1)":
     - Flutter
-  - Protobuf (3.22.1)
+  - Protobuf (3.11.4)
   - reactive_ble_mobile (0.0.1):
     - Flutter
     - Protobuf (~> 3.5)
     - SwiftProtobuf (~> 1.0)
-  - SwiftProtobuf (1.21.0)
+  - SwiftProtobuf (1.22.0)
 
 DEPENDENCIES:
   - app_settings (from `.symlinks/plugins/app_settings/ios`)
   - Flutter (from `Flutter`)
+  - flutter_blue (from `.symlinks/plugins/flutter_blue/ios`)
   - location_permissions (from `.symlinks/plugins/location_permissions/ios`)
   - reactive_ble_mobile (from `.symlinks/plugins/reactive_ble_mobile/ios`)
 
@@ -27,6 +34,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/app_settings/ios"
   Flutter:
     :path: Flutter
+  flutter_blue:
+    :path: ".symlinks/plugins/flutter_blue/ios"
   location_permissions:
     :path: ".symlinks/plugins/location_permissions/ios"
   reactive_ble_mobile:
@@ -35,11 +44,12 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   app_settings: d103828c9f5d515c4df9ee754dabd443f7cedcf3
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  flutter_blue: eeb381dc4727a0954dede73515f683865494b370
   location_permissions: 7e0f9aa0f60deb8ff93ddf0e2a164c7e8197bc94
-  Protobuf: d7f7c8329edf5eb8af65547a8ba3e9c1cee927d5
+  Protobuf: 176220c526ad8bd09ab1fb40a978eac3fef665f7
   reactive_ble_mobile: 9ce6723d37ccf701dbffd202d487f23f5de03b4c
-  SwiftProtobuf: afced68785854575756db965e9da52bbf3dc45e7
+  SwiftProtobuf: 40bd808372cb8706108f22d28f8ab4a6b9bc6989
 
-PODFILE CHECKSUM: ef19549a9bc3046e7bb7d2fab4d021637c0c58a3
+PODFILE CHECKSUM: 9931ec03eb62f41079f6db61099c9047518d37a6
 
 COCOAPODS: 1.12.0

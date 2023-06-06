@@ -20,7 +20,7 @@ class _HUDPageState extends State<HUDPage> {
 
   void _randomizeSpeed() {
     setState(() {
-      speed.add(Random().nextInt(20).toDouble());
+      speed.add(90);
     });
   }
 
