@@ -5,6 +5,7 @@ import 'package:app_settings/app_settings.dart';
 import 'package:location_permissions/location_permissions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:test_drive/components/device_data.dart';
 
 class BluetoothPage extends StatefulWidget {
   const BluetoothPage({super.key});
@@ -20,6 +21,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
   bool _scanStarted = false;
   bool _connected = false;
 
+  late DeviceData deviceData;
   late DiscoveredDevice _myDevice;
   final flutterReactiveBle = FlutterReactiveBle();
   late StreamSubscription<DiscoveredDevice> _scanStream;
@@ -33,8 +35,8 @@ class _BluetoothPageState extends State<BluetoothPage> {
 
   final deviceInfo = <String>[];
 
-  String _btstatus = "hello";
-  String temp = "hello";
+  String _devices = "";
+  String temp = "";
 
   void _startScan() async {
     int index = 0;
@@ -42,7 +44,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
     bool permGranted = false;
     setState(() {
       _scanStarted = true;
-      _btstatus = "scan started";
+      _devices = "scan started";
     });
     PermissionStatus permission;
     if (Platform.isAndroid) {
@@ -55,7 +57,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
     // main scanning logic
     if (permGranted) {
       setState(() {
-        _btstatus = "";
+        _devices = "";
       });
       _scanStream =
           flutterReactiveBle.scanForDevices(withServices: []).listen((device) {
@@ -64,13 +66,14 @@ class _BluetoothPageState extends State<BluetoothPage> {
           deviceInfo.add(device.name);
           deviceInfo.add(device.id.toString());
           setState(() {
-            _btstatus += temp;
+            _devices += temp;
           });
           index++;
         }
         if (device.name == 'DSD TECH') {
           setState(() {
             _myDevice = device;
+            deviceData = DeviceData(device);
             _foundDeviceWaitingToConnect = true;
           });
         }
@@ -120,7 +123,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
 
   void _partyTime2() {
     setState(() {
-      _btstatus = "Party Time!";
+      _devices = "Party Time!";
     });
   }
 
@@ -138,19 +141,120 @@ class _BluetoothPageState extends State<BluetoothPage> {
               children: <Widget>[
             Padding(
                 padding: EdgeInsets.all(10.0),
-                child: Text('Welcome to the Bluetooth Connection Page',
-                    style: Theme.of(context).textTheme.bodyMedium)),
-            Padding(
-                padding: EdgeInsets.all(10.0),
                 child: Text(
-                  'Here is the Bluetooth Connection status as well as pairing instructions.',
+                  'Instructions for Bluetooth Connection:',
                   style: Theme.of(context).textTheme.bodyMedium,
-                  textAlign: TextAlign.center,
+                  textAlign: TextAlign.left,
                 )),
             Padding(
                 padding: EdgeInsets.all(10.0),
-                child: Text('Welcome to the Bluetooth Connection Page',
-                    style: Theme.of(context).textTheme.bodyMedium)),
+                child: Text(
+                  '1. Ensure you are in close proximity of e-bike.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.left,
+                )),
+            Padding(
+                padding: EdgeInsets.all(10.0),
+                child: Text.rich(TextSpan(
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    children: [
+                      TextSpan(
+                        text: '2. Tap ',
+                      ),
+                      WidgetSpan(child: Icon(Icons.search)),
+                      TextSpan(text: ' to search for the e-bike\'s signal.'),
+                    ]))),
+            Padding(
+                padding: EdgeInsets.all(10.0),
+                child: Text.rich(TextSpan(
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    children: [
+                      TextSpan(
+                        text: '3. When ',
+                      ),
+                      WidgetSpan(child: Icon(Icons.bluetooth)),
+                      TextSpan(
+                          text: ' is blue, tap it to connect to the e-bike.'),
+                    ]))),
+            Padding(
+                padding: EdgeInsets.all(10.0),
+                child: Text.rich(TextSpan(
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    children: [
+                      TextSpan(
+                        text: '4. If connected,  ',
+                      ),
+                      WidgetSpan(child: Icon(Icons.celebration_rounded)),
+                      TextSpan(text: ' will turn blue. Tap to test.'),
+                    ]))),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: EdgeInsets.all(10.0),
+                  child: _scanStarted
+                      // True condition
+                      ? ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white, // foreground
+                          ),
+                          onPressed: () {},
+                          child: const Icon(Icons.search),
+                        )
+                      // False condition
+                      : ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue, // background
+                            foregroundColor: Colors.white, // foreground
+                          ),
+                          onPressed: _startScan,
+                          child: const Icon(Icons.search),
+                        ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(10.0),
+                  child: _foundDeviceWaitingToConnect
+                      // True condition
+                      ? ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: _connectToDevice,
+                          child: const Icon(Icons.bluetooth),
+                        )
+                      // False condition
+                      : ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () {},
+                          child: const Icon(Icons.bluetooth),
+                        ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(10.0),
+                  child: _connected
+                      // True condition
+                      ? ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: _partyTime,
+                          child: const Icon(Icons.celebration_rounded),
+                        )
+                      // False condition
+                      : ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () {},
+                          child: const Icon(Icons.celebration_rounded),
+                        ),
+                ),
+              ],
+            ),
             ElevatedButton(
                 child: Text('Go to Bluetooth Settings',
                     style: Theme.of(context).textTheme.labelSmall),
@@ -166,69 +270,21 @@ class _BluetoothPageState extends State<BluetoothPage> {
             Padding(
                 padding: EdgeInsets.all(10.0),
                 child: Text(
-                  '$_btstatus',
+                  '$_devices',
                   style: Theme.of(context).textTheme.bodyMedium,
                   textAlign: TextAlign.center,
                 )),
           ])),
       persistentFooterButtons: [
-        _scanStarted
-            // True condition
-            ? ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey, // background
-                  foregroundColor: Colors.white, // foreground
-                ),
-                onPressed: () {},
-                child: const Icon(Icons.search),
-              )
-            // False condition
-            : ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue, // background
-                  foregroundColor: Colors.white, // foreground
-                ),
-                onPressed: _startScan,
-                child: const Icon(Icons.search),
-              ),
-        _foundDeviceWaitingToConnect
-            // True condition
-            ? ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue, // background
-                  foregroundColor: Colors.white, // foreground
-                ),
-                onPressed: _connectToDevice,
-                child: const Icon(Icons.bluetooth),
-              )
-            // False condition
-            : ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey, // background
-                  foregroundColor: Colors.white, // foreground
-                ),
-                onPressed: () {},
-                child: const Icon(Icons.bluetooth),
-              ),
-        _connected
-            // True condition
-            ? ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue, // background
-                  foregroundColor: Colors.white, // foreground
-                ),
-                onPressed: _partyTime,
-                child: const Icon(Icons.celebration_rounded),
-              )
-            // False condition
-            : ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey, // background
-                  foregroundColor: Colors.white, // foreground
-                ),
-                onPressed: () {},
-                child: const Icon(Icons.celebration_rounded),
-              ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+          ),
+          onPressed: () {
+            Navigator.pop(context, deviceData);
+          },
+          child: const Icon(Icons.home),
+        ),
       ],
     );
   }
