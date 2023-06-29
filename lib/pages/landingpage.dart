@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:test_drive/pages/bluetooth.dart';
 import 'package:test_drive/pages/hudpage.dart';
-import 'newpage.dart';
+import 'package:test_drive/pages/lightcontrol.dart';
+import 'package:test_drive/components/device_data.dart';
 
 class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
@@ -14,14 +15,20 @@ class LandingPage extends StatefulWidget {
 }
 
 class _LandingPageState extends State<LandingPage> {
+  late DeviceData deviceData;
+  bool _connected = false;
   @override
   void initState() {
     super.initState();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
     ]);
+  }
+
+  void checkDevice() {
+    setState(() {
+      if (deviceData != null) [_connected = true];
+    });
   }
 
   @override
@@ -38,7 +45,7 @@ class _LandingPageState extends State<LandingPage> {
                   padding: EdgeInsets.all(30.0),
                   child: ElevatedButton(
                       child: Text(
-                        'Bluetooth Connection',
+                        'Bluetooth and HUD',
                         style: Theme.of(context).textTheme.labelSmall,
                         textAlign: TextAlign.center,
                       ),
@@ -53,7 +60,7 @@ class _LandingPageState extends State<LandingPage> {
                   padding: EdgeInsets.all(30.0),
                   child: ElevatedButton(
                       child: Text(
-                        'Heads Up Display Mode',
+                        'Light Control',
                         style: Theme.of(context).textTheme.labelSmall,
                         textAlign: TextAlign.center,
                       ),
@@ -61,20 +68,7 @@ class _LandingPageState extends State<LandingPage> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const HUDPage()));
-                      }),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(30.0),
-                  child: ElevatedButton(
-                      child: Text(
-                        'Party Time',
-                        style: Theme.of(context).textTheme.labelSmall,
-                        textAlign: TextAlign.center,
-                      ),
-                      onPressed: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => NewPage()));
+                                builder: (context) => LightPage()));
                       }),
                 ),
               ]);

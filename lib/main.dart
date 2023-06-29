@@ -27,13 +27,29 @@ class MyApp extends StatelessWidget {
       onSurface: Color(0xFF54B435),
     );
     const TextTheme normalTextTheme = TextTheme(
-      displaySmall: TextStyle(color: Colors.red),
-      displayMedium: TextStyle(color: Colors.red),
-      displayLarge: TextStyle(color: Colors.red),
-      titleLarge: TextStyle(color: Color.fromARGB(255, 255, 236, 235)),
+      displaySmall: TextStyle(
+        color: Color.fromARGB(255, 0, 255, 17),
+        fontSize: 20.0,
+        fontWeight: FontWeight.bold,
+      ),
+      displayMedium: TextStyle(
+        color: Color.fromARGB(255, 255, 0, 0),
+        fontSize: 20.0,
+        fontWeight: FontWeight.bold,
+      ),
+      displayLarge: TextStyle(
+        color: Color.fromARGB(255, 242, 214, 203),
+        fontSize: 45.0,
+        fontWeight: FontWeight.bold,
+      ),
+      titleLarge: TextStyle(
+        color: Color.fromARGB(255, 255, 255, 255),
+        fontSize: 20.0,
+      ),
       titleMedium: TextStyle(
         color: Color.fromARGB(255, 91, 81, 77),
         fontSize: 25.0,
+        fontWeight: FontWeight.bold,
       ),
       titleSmall: TextStyle(color: Colors.red),
       bodyLarge: TextStyle(

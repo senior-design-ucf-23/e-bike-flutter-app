@@ -1,13 +1,9 @@
 PODS:
   - "app_settings (3.0.0+1)":
     - Flutter
+  - battery_plus (1.0.0):
+    - Flutter
   - Flutter (1.0.0)
-  - flutter_blue (0.0.1):
-    - Flutter
-    - flutter_blue/Protos (= 0.0.1)
-  - flutter_blue/Protos (0.0.1):
-    - Flutter
-    - Protobuf (~> 3.11.4)
   - "location_permissions (3.0.0+1)":
     - Flutter
   - Protobuf (3.11.4)
@@ -19,8 +15,8 @@ PODS:
 
 DEPENDENCIES:
   - app_settings (from `.symlinks/plugins/app_settings/ios`)
+  - battery_plus (from `.symlinks/plugins/battery_plus/ios`)
   - Flutter (from `Flutter`)
-  - flutter_blue (from `.symlinks/plugins/flutter_blue/ios`)
   - location_permissions (from `.symlinks/plugins/location_permissions/ios`)
   - reactive_ble_mobile (from `.symlinks/plugins/reactive_ble_mobile/ios`)
 
@@ -32,10 +28,10 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   app_settings:
     :path: ".symlinks/plugins/app_settings/ios"
+  battery_plus:
+    :path: ".symlinks/plugins/battery_plus/ios"
   Flutter:
     :path: Flutter
-  flutter_blue:
-    :path: ".symlinks/plugins/flutter_blue/ios"
   location_permissions:
     :path: ".symlinks/plugins/location_permissions/ios"
   reactive_ble_mobile:
@@ -43,8 +39,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   app_settings: d103828c9f5d515c4df9ee754dabd443f7cedcf3
+  battery_plus: 7851ab482c336dd101ae735dc9363f01e1223c7c
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
-  flutter_blue: eeb381dc4727a0954dede73515f683865494b370
   location_permissions: 7e0f9aa0f60deb8ff93ddf0e2a164c7e8197bc94
   Protobuf: 176220c526ad8bd09ab1fb40a978eac3fef665f7
   reactive_ble_mobile: 9ce6723d37ccf701dbffd202d487f23f5de03b4c

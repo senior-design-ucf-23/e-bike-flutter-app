@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test_drive/pages/bluetooth.dart';
 import 'package:test_drive/pages/landingpage.dart';
 
 class WarningPage extends StatefulWidget {
@@ -31,7 +32,7 @@ class _WarningPageState extends State<WarningPage> {
                     padding: EdgeInsets.all(10.0),
                     child: Text(
                       'WARNING',
-                      style: Theme.of(context).textTheme.titleLarge,
+                      style: Theme.of(context).textTheme.displayLarge,
                       textAlign: TextAlign.center,
                     )),
                 Padding(
