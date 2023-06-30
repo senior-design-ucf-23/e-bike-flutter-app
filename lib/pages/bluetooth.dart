@@ -1,12 +1,11 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 
 import 'package:app_settings/app_settings.dart';
-import 'package:location_permissions/location_permissions.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:test_drive/components/device_data.dart';
+import 'package:flutter/services.dart';
 import 'package:test_drive/pages/hudpage.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:test_drive/components/bt_packets.dart';
 
 class BluetoothPage extends StatefulWidget {
   const BluetoothPage({super.key});
@@ -18,9 +17,225 @@ class BluetoothPage extends StatefulWidget {
 }
 
 class _BluetoothPageState extends State<BluetoothPage> {
+  // instantiations
+  FlutterBluePlus fbp = FlutterBluePlus.instance;
+  TxPacket tx = TxPacket();
+  RxPacket rx = RxPacket();
+
+  // late variables, non-nullables initialized later
+  late StreamSubscription<List<ScanResult>> discovers;
+  late ScanResult dsdDevice;
+  late List<BluetoothService> dsdServices;
+  late BluetoothService dsdService;
+  late List<BluetoothCharacteristic> dsdChars;
+  late BluetoothCharacteristic dsdChar;
+
+  // final variables
+  final String ebikeServiceUuid = "0000FFE0-0000-1000-8000-00805F9B34FB";
+  final String ebikeCharsUuid = "0000FFE1-0000-1000-8000-00805F9B34FB";
+  final String ebikeUuid = "5F1A2977-C1F0-8EE5-EFD7-1EFD7B5FC029";
+
+  // normal variables
   bool _foundDeviceWaitingToConnect = false;
   bool _scanStarted = false;
   bool _connected = false;
+  String _btTestButton = "Hello there!";
+
+  // connects to found device
+  void _connectToDevice() async {
+    await dsdDevice.device.connect();
+    _connected = true;
+  }
+
+  // starts scan, finds device, and sets info to late variables
+  void _startScan() async {
+    setState(() {
+      _btTestButton = "";
+    });
+
+    print("in scan");
+
+    // Start scanning
+    fbp.startScan(timeout: Duration(milliseconds: 100));
+    print("first scan");
+    fbp.stopScan();
+    print("stopped first");
+    fbp.startScan(timeout: Duration(seconds: 4));
+    print("second scan");
+    _scanStarted = true;
+
+    // Listen to scan results
+    discovers = fbp.scanResults.listen((results) {
+      print("in result listener");
+      for (ScanResult r in results) {
+        //print('${r.device.name} found! rssi: ${r.rssi}');
+        if (r.device.name == "DSD TECH") {
+          print('${r.device.name} found!');
+          _foundDeviceWaitingToConnect = true;
+          dsdDevice = r;
+          //selectService(await dsdDevice.device.discoverServices());
+          //-- if above works, uncomment this --
+          //selectCharacteristic(dsdService.characteristics);
+        }
+        setState(() {
+          print("in set state");
+          _btTestButton += "${r.device.name}, ${r.device.id.id}";
+        });
+      }
+      print("after for loop");
+    });
+
+    // Stop scanning
+    fbp.stopScan();
+    print("second scan stopped");
+
+    /*
+    fbp.startScan(timeout: Duration(seconds: 4));
+
+    var subscription = fbp.scanResults.listen((results) {
+      for (ScanResult r in results) {
+        setState(() {
+          _btTestButton =
+              '$_btTestButton\n ${r.device.name}, ${r.device.id.id}';
+        });
+        if (r.device.name == "DSD TECH") {
+          print('${r.device.name} found!');
+          _foundDeviceWaitingToConnect = true;
+          dsdDevice = r;
+          //selectService(await dsdDevice.device.discoverServices());
+          //-- if above works, uncomment this --
+          //selectCharacteristic(dsdService.characteristics);
+        }
+      }
+    });
+
+    fbp.stopScan();*/
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    fbp.stopScan();
+  }
+
+  // stops scan of devices
+  void stopScan() {
+    setState(() {
+      fbp.stopScan();
+      _scanStarted = false;
+      print("scan stopped");
+    });
+  }
+
+  // if bt module service uuid is in list, will find and set
+  void selectService(List<BluetoothService> services) {
+    for (BluetoothService s in services) {
+      print(s.uuid);
+      if (s.uuid == Guid(ebikeServiceUuid)) {
+        dsdService = s;
+      }
+    }
+  }
+
+  // if bt module characteristic uuid is in list, will find and set
+  void selectCharacteristic(List<BluetoothCharacteristic> chars) {
+    for (BluetoothCharacteristic c in chars) {
+      print(c.uuid);
+      if (c.uuid == Guid(ebikeCharsUuid)) {
+        dsdChar = c;
+      }
+    }
+  }
+
+  // write to bt module characteristic
+  // currently writes just ascii value for 'a' for LED toggling
+  void _partyTime() async {
+    dsdChars = dsdService.characteristics;
+    for (BluetoothCharacteristic c in dsdChars) {
+      if (c.uuid == Guid(ebikeCharsUuid)) {
+        await c.write([0x61]);
+      }
+    }
+  }
+
+  // reads bt module characteristic (there's only one)
+  // currently reads the first value sent, turns into string,
+  // and sets it to the value of the button pressed
+  // ** there should only be one value sent as of now anyway **
+  void _partyTime2() async {
+    dsdChars = dsdService.characteristics;
+    for (BluetoothCharacteristic c in dsdChars) {
+      if (c.uuid == Guid(ebikeCharsUuid)) {
+        List<int> read = await c.read();
+        _btTestButton = read[0].toString();
+        print(read);
+      }
+    }
+  }
+
+  // __________________ SAMPLE CBCENTRALMANAGER CHECKING CODE _________________
+
+  static const EventChannel eventChannel =
+      EventChannel('samples.flutter.io/bluetooth');
+
+  static const MethodChannel methodChannel =
+      MethodChannel('method.flutter.io/bluetooth');
+
+  String _bluetoothStatus = 'Bluetooth status: ';
+
+  String _bleState = 'not';
+
+  @override
+  void initState() {
+    super.initState();
+    eventChannel.receiveBroadcastStream().listen(_onEvent, onError: _onError);
+    _getBluetoothState();
+    _centralManagerDidUpdateState();
+  }
+
+  void _onEvent(Object? event) {
+    setState(() {
+      _bluetoothStatus = "Bluetooth status: ${event == 'on' ? 'on' : 'off'}";
+    });
+  }
+
+  void _onError(Object error) {
+    setState(() {
+      _bluetoothStatus = 'Battery status: unknown.';
+    });
+  }
+
+  Future<void> _getBluetoothState() async {
+    String bluetoothState;
+    try {
+      final String? result =
+          await methodChannel.invokeMethod('getBluetoothState');
+      bluetoothState = '$result%.';
+    } on PlatformException {
+      bluetoothState = 'Failed to get battery level.';
+    }
+    setState(() {
+      _bleState = bluetoothState;
+    });
+  }
+
+  Future<void> _centralManagerDidUpdateState() async {
+    String cbState;
+    try {
+      final String? result =
+          await methodChannel.invokeMethod('centralManagerDidUpdateState');
+      cbState = '$result%.';
+    } on PlatformException {
+      cbState = 'Failed to get battery level.';
+    }
+    setState(() {
+      _bleState = cbState;
+    });
+  }
+
+  // __________________________________________________________________________
+
+  /* Old bluetooth code, if new works, delete all this
 
   late DeviceData deviceData;
   late DiscoveredDevice _myDevice;
@@ -126,8 +341,20 @@ class _BluetoothPageState extends State<BluetoothPage> {
   void disconnect() {
     setState(() {});
   }
+  */
 
   @override
+
+  /* placeholder initState; inits lights to yellow and mode to 0
+  void initState() {
+    super.initState();
+    tx.bikeMode = 0;
+    tx.lightsAlpha = 0xFF;
+    tx.lightsBlue = 0x00;
+    tx.lightsGreen = 0xFF;
+    tx.lightsRed = 0xFF;
+  }*/
+
   Widget build(BuildContext context) {
     String _status = "NOT CONNECTED";
 
@@ -200,7 +427,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
                               style: ElevatedButton.styleFrom(
                                 foregroundColor: Colors.white, // foreground
                               ),
-                              onPressed: () {},
+                              onPressed: stopScan,
                               child: const Icon(Icons.search),
                             )
                           // False condition
@@ -212,6 +439,13 @@ class _BluetoothPageState extends State<BluetoothPage> {
                               onPressed: _startScan,
                               child: const Icon(Icons.search),
                             ),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white, // foreground
+                      ),
+                      onPressed: stopScan,
+                      child: const Icon(Icons.stop),
                     ),
                     Padding(
                       padding: EdgeInsets.all(10.0),
@@ -263,6 +497,11 @@ class _BluetoothPageState extends State<BluetoothPage> {
                     onPressed: () {
                       AppSettings.openBluetoothSettings();
                     }),
+                ElevatedButton(
+                  onPressed: _partyTime2,
+                  child: Text('Read Test',
+                      style: Theme.of(context).textTheme.labelSmall),
+                ),
                 _connected
                     ? Column(children: <Widget>[
                         Padding(
@@ -306,6 +545,21 @@ class _BluetoothPageState extends State<BluetoothPage> {
                               style: Theme.of(context).textTheme.labelSmall),
                         )
                       ]),
+                Padding(
+                    padding: EdgeInsets.all(35.0),
+                    child: Text(
+                      '$_btTestButton',
+                    )),
+                Padding(
+                    padding: EdgeInsets.all(35.0),
+                    child: Text(
+                      '$_bluetoothStatus',
+                    )),
+                Padding(
+                    padding: EdgeInsets.all(35.0),
+                    child: Text(
+                      '$_bleState',
+                    )),
               ]),
         ));
   }
