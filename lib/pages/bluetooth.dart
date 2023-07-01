@@ -24,9 +24,12 @@ class _BluetoothPageState extends State<BluetoothPage> {
 
   late DeviceData deviceData;
   late DiscoveredDevice _myDevice;
+  late List<DiscoveredService> _myServices;
+  late List<DiscoveredCharacteristic> _myChars;
   final flutterReactiveBle = FlutterReactiveBle();
   late StreamSubscription<DiscoveredDevice> _scanStream;
   late QualifiedCharacteristic _rxCharacteristic;
+  late QualifiedCharacteristic newCharacteristic;
 
   final deviceNames = <String>[];
   final Uuid ebikeServiceUuid =
@@ -38,6 +41,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
 
   String _devices = "";
   String temp = "";
+  String readTest = "read test";
 
   void _startScan() async {
     int index = 0;
@@ -62,15 +66,6 @@ class _BluetoothPageState extends State<BluetoothPage> {
       });
       _scanStream =
           flutterReactiveBle.scanForDevices(withServices: []).listen((device) {
-        if (!deviceInfo.contains(device.name)) {
-          temp = "${device.name}, ${device.id}\n";
-          deviceInfo.add(device.name);
-          deviceInfo.add(device.id.toString());
-          setState(() {
-            _devices += temp;
-          });
-          index++;
-        }
         if (device.name == 'DSD TECH') {
           setState(() {
             _myDevice = device;
@@ -79,6 +74,38 @@ class _BluetoothPageState extends State<BluetoothPage> {
             _foundDeviceWaitingToConnect = true;
           });
         }
+      });
+    }
+  }
+
+  // RECIEVING IS WORKING. YOU NEEDED THE 16-BIT SERVICE AND CHAR IDS
+  void _partyTime2() {
+    if (Platform.isAndroid) {
+      newCharacteristic = QualifiedCharacteristic(
+          serviceId: ebikeServiceUuid,
+          characteristicId: ebikeCharUuid,
+          deviceId: _myDevice.id);
+    } else if (Platform.isIOS) {
+      newCharacteristic = QualifiedCharacteristic(
+          serviceId: Uuid.parse('ffe0'),
+          characteristicId: Uuid.parse('ffe1'),
+          deviceId: _myDevice.id);
+    }
+
+    if (_connected) {
+      print("in party if");
+      flutterReactiveBle
+          .subscribeToCharacteristic(newCharacteristic)
+          .listen((data) {
+        print("in listen");
+        for (int d in data) {
+          temp += String.fromCharCode(d);
+        }
+        setState(() {
+          readTest = "";
+          readTest = temp;
+          temp = "";
+        });
       });
     }
   }
@@ -99,7 +126,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
             id: _myDevice.id,
             prescanDuration: const Duration(seconds: 1),
             withServices: [ebikeServiceUuid, ebikeCharUuid]);
-    currentConnectionStream.listen((event) {
+    currentConnectionStream.listen((event) async {
       switch (event.connectionState) {
         case DeviceConnectionState.connected:
           {
@@ -107,9 +134,14 @@ class _BluetoothPageState extends State<BluetoothPage> {
                 serviceId: ebikeServiceUuid,
                 characteristicId: ebikeCharUuid,
                 deviceId: _myDevice.id);
+
+            _myServices =
+                await flutterReactiveBle.discoverServices(_myDevice.id);
+            print(_myServices);
             setState(() {
               _foundDeviceWaitingToConnect = false;
               _connected = true;
+              print("connected");
             });
             break;
           }
@@ -306,6 +338,18 @@ class _BluetoothPageState extends State<BluetoothPage> {
                               style: Theme.of(context).textTheme.labelSmall),
                         )
                       ]),
+                Padding(
+                    padding: EdgeInsets.all(10.0),
+                    child: Text(
+                      '$readTest',
+                      style: Theme.of(context).textTheme.displayMedium,
+                      textAlign: TextAlign.center,
+                    )),
+                ElevatedButton(
+                  onPressed: _partyTime2,
+                  child: Text('Read Test',
+                      style: Theme.of(context).textTheme.labelSmall),
+                )
               ]),
         ));
   }
