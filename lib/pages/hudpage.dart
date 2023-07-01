@@ -1,20 +1,23 @@
+import 'dart:async';
 import 'dart:math';
+import 'dart:io' show Platform;
 
+import 'package:location_permissions/location_permissions.dart';
 import 'package:battery_indicator/battery_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:speedometer/speedometer.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:test_drive/components/device_data.dart';
+import 'package:test_drive/components/bt_packets.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 
 class HUDPage extends StatefulWidget {
   final String title = 'Heads-Up-Display';
-  //late DeviceData deviceData;
+  late DiscoveredDevice myDevice;
   HUDPage({
     super.key,
-    /*required this.deviceData*/
+    required this.myDevice,
   });
 
   @override
@@ -23,18 +26,25 @@ class HUDPage extends StatefulWidget {
 
 class _HUDPageState extends State<HUDPage> {
   final speed = PublishSubject<double>();
-  final charge = PublishSubject<double>();
-  String _phone = "fuck you";
   // ________ CHANGE TO FALSE _____________
   bool _btstatus = true;
+  bool _connected = false;
+  String readTest = "";
+  int battery = 69;
 
-  final _ble = FlutterReactiveBle();
+  RxPacket rx = RxPacket();
+  TxPacket tx = TxPacket();
+
+  final fbp = FlutterReactiveBle();
   late QualifiedCharacteristic characteristic;
+  late DiscoveredDevice _myDevice = widget.myDevice;
+  late StreamSubscription<DiscoveredDevice> _scanStream;
   final Uuid ebikeServiceUuid =
       Uuid.parse("0000FFE0-0000-1000-8000-00805F9B34FB");
   final Uuid ebikeCharUuid = Uuid.parse("0000FFE1-0000-1000-8000-00805F9B34FB");
   final Uuid ebikeUuid = Uuid.parse("5F1A2977-C1F0-8EE5-EFD7-1EFD7B5FC029");
-  ValueNotifier batteryChange = ValueNotifier(false);
+  late QualifiedCharacteristic _txCharacteristic;
+  late QualifiedCharacteristic _rxCharacteristic;
 
   late Color dialogSelectColor;
 
@@ -57,12 +67,90 @@ class _HUDPageState extends State<HUDPage> {
     ColorTools.createPrimarySwatch(blueBlues): 'Blue blues',
   };
 
-  void _randomizeSpeed() {
-    setState(() {
-      speed.add(90);
-    });
+  @override
+  void initState() {
+    super.initState();
+    dialogSelectColor =
+        Color.fromARGB(255, 149, 243, 33); //const Color(0xFFA239CA);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeRight]);
+
+    //_startScan();
+    //print("scan started");
+    String toSplit1 = "speed:100,battery:50,throttle:0";
+    String toSplit2 = "speed:50,battery:50,throttle:100";
+
+    print(toSplit1.split(','));
+    print(toSplit2.split(','));
+
+    _connectToDevice();
+    print("finished connect function");
   }
 
+  int findColon(String s) {
+    var index = 0;
+    while (index != s.length - 1) {
+      if (s[index] == ':') {
+        return index;
+      }
+      index++;
+    }
+    return 0;
+  }
+
+  void translatePacket(String info) {
+    var infoSplit = info.split(',');
+    String name = 'default';
+    String value = 'og';
+    for (String s in infoSplit) {
+      print(s);
+      /*var colonPos = findColon(s);
+      print('colon position: $colonPos');
+      temp = s.substring(0, colonPos);*/
+      var sSplit = s.split(':');
+      print(sSplit);
+      name = sSplit[0];
+      value = sSplit[1];
+      switch (name) {
+        case 'speed':
+          //temp = s.substring(colonPos + 1);
+          // display speed
+
+          print("speed:");
+          print(value);
+          setState(() {
+            speed.add(double.parse(value));
+          });
+          break;
+        case 'battery':
+          //temp = s.substring(colonPos + 1);
+          // display battery
+
+          print("battery:");
+          print(value);
+          setState(() {
+            battery = int.parse(value);
+          });
+          break;
+        case 'input':
+          //temp = s.substring(colonPos + 1);
+          // display battery
+
+          print("input:");
+          print(value);
+          break;
+        case 'default':
+          print(value);
+          print('default');
+          break;
+        default:
+          print(value);
+          print('error: invalid switch value');
+          break;
+      }
+    }
+  }
+
+  // write lights and mode update
   void writeUpdate() {
     if (_btstatus) {
       /*_ble.writeCharacteristicWithoutResponse(characteristic, value: [
@@ -71,68 +159,104 @@ class _HUDPageState extends State<HUDPage> {
     }
   }
 
-  void _receiveUpdate() {
-    /*DiscoveredDevice _myDevice = widget.deviceData.device;
+  void _receiveUpdate() {}
 
-    setState(() {
-      _phone = "just fuck";
-    });
+  void _startScan() {
+    print("in scan");
+    /*// handles platform permissions
+    bool permGranted = false;
+    PermissionStatus permission;
+    if (Platform.isAndroid) {
+      permission = await LocationPermissions().requestPermissions();
+      if (permission == PermissionStatus.granted) permGranted = true;
+    } else if (Platform.isIOS) {
+      permGranted = true;
+    }*/
 
-    _phone = _myDevice.id;
-    _ble.subscribeToCharacteristic(characteristic).listen((data) {
-      _phone = "subscribed";
-      setState(() {
-        _phone = String.fromCharCodes(data);
-      });
-    }, onError: (dynamic error) {
-      _phone = "error";
+    print("after permissions");
+
+    // main scanning logic
+    //if (permGranted) {
+    //print("in grant if");
+    _scanStream = fbp.scanForDevices(withServices: []).listen((device) {
+      print("after scan start");
+      if (device.name == 'DSD TECH') {
+        print("found device");
+        setState(() {
+          _myDevice = device;
+        });
+      }
     });
-    _phone = "past subscribe";*/
+    //}
   }
 
-  void _randomizeCharge() {
-    setState(() {
-      charge.add(Random().nextInt(100).toDouble());
-    });
-  }
-
-  void checkStatus() {
-    /*DiscoveredDevice _myDevice = widget.deviceData.device;
-    Stream<ConnectionStateUpdate> currentConnectionStream = _ble
+  void _connectToDevice() {
+    // _scanStream.cancel();
+    Stream<ConnectionStateUpdate> currentConnectionStream = fbp
         .connectToAdvertisingDevice(
             id: _myDevice.id,
             prescanDuration: const Duration(seconds: 1),
             withServices: [ebikeServiceUuid, ebikeCharUuid]);
+    print("in connect, connected");
+    print(_myDevice.id);
     currentConnectionStream.listen((event) {
       switch (event.connectionState) {
         case DeviceConnectionState.connected:
           {
-            characteristic = QualifiedCharacteristic(
+            print("setting tx char");
+            _txCharacteristic = QualifiedCharacteristic(
                 serviceId: ebikeServiceUuid,
                 characteristicId: ebikeCharUuid,
                 deviceId: _myDevice.id);
             setState(() {
-              _btstatus = true;
+              _connected = true;
             });
+            _partyTime2();
+            print("receiving");
             break;
           }
         case DeviceConnectionState.disconnected:
           {
-            _btstatus = false;
+            _connected = false;
             break;
           }
         default:
       }
-    });*/
+    });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    checkStatus();
-    dialogSelectColor =
-        Color.fromARGB(255, 149, 243, 33); //const Color(0xFFA239CA);
-    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeRight]);
+  void _partyTime2() {
+    print("in party");
+    var temp = "";
+    if (Platform.isAndroid) {
+      _rxCharacteristic = QualifiedCharacteristic(
+          serviceId: ebikeServiceUuid,
+          characteristicId: ebikeCharUuid,
+          deviceId: _myDevice.id);
+    } else if (Platform.isIOS) {
+      _rxCharacteristic = QualifiedCharacteristic(
+          serviceId: Uuid.parse('ffe0'),
+          characteristicId: Uuid.parse('ffe1'),
+          deviceId: _myDevice.id);
+    }
+
+    print("after plat-spec");
+
+    if (_connected) {
+      print("in party if");
+      fbp.subscribeToCharacteristic(_rxCharacteristic).listen((data) {
+        print("in listen");
+        for (int d in data) {
+          temp += String.fromCharCode(d);
+        }
+        setState(() {
+          readTest = "";
+          readTest = temp;
+          translatePacket(temp);
+          temp = "";
+        });
+      });
+    }
   }
 
   @override
@@ -237,7 +361,7 @@ class _HUDPageState extends State<HUDPage> {
                                 });
                               }),
                           ElevatedButton(
-                            onPressed: () => _randomizeSpeed(),
+                            onPressed: () {},
                             child: Text(
                               'Update Lights',
                               style: Theme.of(context).textTheme.labelSmall,
@@ -245,16 +369,16 @@ class _HUDPageState extends State<HUDPage> {
                             ),
                           ),
                           ElevatedButton(
-                            onPressed: () => _randomizeCharge(),
+                            onPressed: () {},
                             child: Text(
                               'Randomize Charge',
                               style: Theme.of(context).textTheme.labelSmall,
                               textAlign: TextAlign.center,
                             ),
                           ),
-                          _btstatus
+                          _connected
                               ? ElevatedButton(
-                                  onPressed: () => _receiveUpdate(),
+                                  onPressed: () {},
                                   child: Text(
                                     'Connected',
                                     style:
@@ -263,7 +387,7 @@ class _HUDPageState extends State<HUDPage> {
                                   ),
                                 )
                               : ElevatedButton(
-                                  onPressed: () => _randomizeCharge(),
+                                  onPressed: () {},
                                   child: Text(
                                     'Not Connected',
                                     style:
@@ -310,7 +434,7 @@ class _HUDPageState extends State<HUDPage> {
                                 SizedBox(height: 25),
                                 BatteryIndicator(
                                   batteryFromPhone: false,
-                                  batteryLevel: 50,
+                                  batteryLevel: battery,
                                   size: 70,
                                   style: BatteryIndicatorStyle.skeumorphism,
                                 ),

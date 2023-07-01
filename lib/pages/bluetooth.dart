@@ -28,8 +28,8 @@ class _BluetoothPageState extends State<BluetoothPage> {
   late List<DiscoveredCharacteristic> _myChars;
   final flutterReactiveBle = FlutterReactiveBle();
   late StreamSubscription<DiscoveredDevice> _scanStream;
+  late QualifiedCharacteristic _txCharacteristic;
   late QualifiedCharacteristic _rxCharacteristic;
-  late QualifiedCharacteristic newCharacteristic;
 
   final deviceNames = <String>[];
   final Uuid ebikeServiceUuid =
@@ -81,12 +81,12 @@ class _BluetoothPageState extends State<BluetoothPage> {
   // RECIEVING IS WORKING. YOU NEEDED THE 16-BIT SERVICE AND CHAR IDS
   void _partyTime2() {
     if (Platform.isAndroid) {
-      newCharacteristic = QualifiedCharacteristic(
+      _rxCharacteristic = QualifiedCharacteristic(
           serviceId: ebikeServiceUuid,
           characteristicId: ebikeCharUuid,
           deviceId: _myDevice.id);
     } else if (Platform.isIOS) {
-      newCharacteristic = QualifiedCharacteristic(
+      _rxCharacteristic = QualifiedCharacteristic(
           serviceId: Uuid.parse('ffe0'),
           characteristicId: Uuid.parse('ffe1'),
           deviceId: _myDevice.id);
@@ -95,7 +95,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
     if (_connected) {
       print("in party if");
       flutterReactiveBle
-          .subscribeToCharacteristic(newCharacteristic)
+          .subscribeToCharacteristic(_rxCharacteristic)
           .listen((data) {
         print("in listen");
         for (int d in data) {
@@ -113,7 +113,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
   void _partyTime() {
     if (_connected) {
       flutterReactiveBle
-          .writeCharacteristicWithoutResponse(_rxCharacteristic, value: [
+          .writeCharacteristicWithoutResponse(_txCharacteristic, value: [
         0x61,
       ]);
     }
@@ -130,7 +130,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
       switch (event.connectionState) {
         case DeviceConnectionState.connected:
           {
-            _rxCharacteristic = QualifiedCharacteristic(
+            _txCharacteristic = QualifiedCharacteristic(
                 serviceId: ebikeServiceUuid,
                 characteristicId: ebikeCharUuid,
                 deviceId: _myDevice.id);
@@ -312,7 +312,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>
-                                      HUDPage(/*deviceData: deviceData*/),
+                                      HUDPage(myDevice: _myDevice),
                                 ),
                               );
                             })
@@ -326,14 +326,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
                               textAlign: TextAlign.center,
                             )),
                         ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      HUDPage(/*deviceData: deviceData*/),
-                                ));
-                          },
+                          onPressed: null,
                           child: Text('Go to HUD',
                               style: Theme.of(context).textTheme.labelSmall),
                         )
